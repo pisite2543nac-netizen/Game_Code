@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code Typing Quest – ฝึกพิมพ์โค้ด 20 ด่าน</title>
+<style>
+:root{--bg:#0d1117;--p:#161b22;--b:#30363d;--t:#e6edf3;--m:#8b949e;--g:#3fb950;--r:#f85149;--c:#58a6ff;--y:#e3b341}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t);font-family:system-ui,"Noto Sans Thai",sans-serif;line-height:1.5}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--b);background:var(--p)}
+h1{font-size:1.2rem;margin:0}h1 span{color:var(--g)}
+button{font:inherit;cursor:pointer;border:1px solid var(--b);background:#21262d;color:var(--t);border-radius:8px;padding:6px 12px}
+button:hover{border-color:var(--c)}button.on{background:#1f6feb;border-color:#1f6feb}
+#nav{display:flex;gap:6px;overflow-x:auto;padding:10px 18px;border-bottom:1px solid var(--b)}
+#nav button{min-width:46px;padding:4px 6px;font-size:.8rem;flex:none}
+#nav button.cur{border-color:var(--c);box-shadow:0 0 0 1px var(--c)}
+#nav button.lock{opacity:.35;cursor:not-allowed}
+main{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px 18px}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+.box{background:var(--p);border:1px solid var(--b);border-radius:10px;padding:14px}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;margin-right:4px;color:#000;font-weight:700}
+.HTML{background:#f0883e}.CSS{background:#58a6ff}.JS{background:#e3b341}.Python{background:#3fb950}
+h2{margin:6px 0;font-size:1.1rem}.info p{margin:4px 0;color:var(--m);font-size:.9rem}.info b{color:var(--t)}
+#stats{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;color:var(--m);margin:8px 0}#stats b{color:var(--y)}
+#bar{height:5px;background:#21262d;border-radius:3px;margin-bottom:8px}#bar i{display:block;height:100%;width:0;background:var(--g);border-radius:3px}
+#ed{position:relative;background:#010409;border:1px solid var(--b);border-radius:8px;padding:12px;min-height:150px;cursor:text}
+#ed:focus-within{border-color:var(--c)}
+#disp{font:14px/1.6 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-all;margin:0}
+#disp .ok{color:var(--g)}#disp .bad{background:var(--r);color:#fff}#disp .pend{color:#6e7681}
+#disp .hide{color:transparent}#disp .cur{border-left:2px solid var(--c);margin-left:-2px;animation:bl 1s infinite}
+@keyframes bl{50%{border-color:transparent}}
+#ta{position:absolute;inset:0;width:100%;height:100%;opacity:0;resize:none;cursor:text}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.note{font-size:.8rem;color:var(--m)}
+#pv{width:100%;height:300px;border:0;background:#fff;border-radius:6px}
+#term{display:none;height:300px;background:#010409;color:#7ee787;font:14px/1.6 ui-monospace,monospace;padding:12px;border-radius:6px;overflow:auto;white-space:pre-wrap}
+.bar2{display:flex;gap:6px;align-items:center;font-size:.8rem;color:var(--m);margin-bottom:8px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+#ov{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:9}
+#ov div{background:var(--p);border:1px solid var(--g);border-radius:14px;padding:26px 34px;text-align:center;max-width:340px}
+#ov .s{font-size:2.2rem;letter-spacing:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>⌨️ Code <span>Typing</span> Quest <small style="color:var(--m);font-weight:400">ฝึกพิมพ์ + จำโค้ด 20 ด่าน</small></h1>
+  <div><span id="tot">⭐ 0/60</span> <button id="unl">🔓 ปลดล็อกทุกด่าน</button> <button id="rst">รีเซ็ต</button></div>
+</header>
+<div id="nav"></div>
+<main>
+  <section>
+    <div class="box info" id="info"></div>
+    <div class="box" style="margin-top:14px">
+      <div id="stats"><span>WPM: <b id="wpm">0</b></span><span>แม่นยำ: <b id="acc">100</b>%</span><span>ความคืบหน้า: <b id="pg">0</b>%</span></div>
+      <div id="bar"><i></i></div>
+      <div id="ed"><pre id="disp"></pre>
+        <textarea id="ta" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea></div>
+      <div class="row">
+        <button id="mem">🧠 โหมดฝึกจำ: ปิด</button>
+        <button id="hint">👁 ดูโค้ดช่วย (3 วิ)</button>
+        <button id="retry">↺ เริ่มใหม่</button>
+        <span class="note">คลิกกล่องแล้วพิมพ์ได้เลย • กด Enter ระบบเว้นย่อหน้าให้อัตโนมัติ</span>
+      </div>
+    </div>
+  </section>
+  <section class="box">
+    <div class="bar2"><span class="dot" style="background:#f85149"></span><span class="dot" style="background:#e3b341"></span><span class="dot" style="background:#3fb950"></span>
+      <span id="pvt">🌐 Live Preview — ผลลัพธ์แสดงสดตามที่พิมพ์</span></div>
+    <iframe id="pv" sandbox="allow-scripts" title="preview"></iframe>
+    <div id="term"></div>
+  </section>
+</main>
+<div id="ov"><div><div class="s" id="ovs"></div><h2 id="ovt">ผ่านด่าน!</h2><p id="ovd" class="note"></p>
+  <button id="ovn" class="on">ด่านถัดไป ▶</button> <button id="ovr">เล่นซ้ำ</button></div></div>
+
+<script>
+const L=[
+{t:"Hello HTML",g:["HTML"],use:"ใช้สร้างโครงหน้าเว็บ เช่น หัวข้อและย่อหน้า ทุกเว็บไซต์เริ่มจากตรงนี้",exp:"<h1> คือหัวข้อใหญ่ <p> คือย่อหน้า ต้องมีแท็กเปิดและแท็กปิดเสมอ",code:`<h1>Hello World</h1>
+<p>I am learning to code.</p>`},
+{t:"รายการและลิงก์",g:["HTML"],use:"ทำเมนู รายการสินค้า หรือลิงก์ไปหน้าอื่น",exp:"<ul> ครอบรายการ <li> แต่ละข้อ ส่วน <a href> คือลิงก์ที่คลิกได้",code:`<ul>
+  <li>HTML</li>
+  <li>CSS</li>
+  <li>JavaScript</li>
+</ul>
+<a href="https://github.com">Go to GitHub</a>`},
+{t:"ตกแต่งสีด้วย CSS",g:["HTML","CSS"],use:"เปลี่ยนสีและการจัดวางข้อความให้หน้าเว็บสวยขึ้น",exp:"แท็ก <style> ใส่ CSS ได้ รูปแบบคือ ตัวเลือก { คุณสมบัติ: ค่า; }",code:`<style>
+  h1 {
+    color: tomato;
+    text-align: center;
+  }
+</style>
+<h1>My First Style</h1>`},
+{t:"การ์ดกรอบมน",g:["HTML","CSS"],use:"ทำกล่องข้อมูล การ์ดสินค้า หรือกล่องโปรไฟล์",exp:"class ใช้จุดนำหน้า (.card) padding คือระยะขอบใน border-radius ทำมุมโค้ง",code:`<style>
+  .card {
+    width: 200px;
+    padding: 20px;
+    border: 2px solid teal;
+    border-radius: 12px;
+  }
+</style>
+<div class="card">Hello Card</div>`},
+{t:"เมนูด้วย Flexbox",g:["HTML","CSS"],use:"ทำแถบเมนูนำทาง (Navbar) เรียงแนวนอน",exp:"display:flex จัดลูกให้เรียงแถว gap คือช่องว่างระหว่างกัน",code:`<style>
+  nav {
+    display: flex;
+    gap: 16px;
+    background: navy;
+    padding: 12px;
+  }
+  a { color: white; }
+</style>
+<nav>
+  <a href="#">Home</a>
+  <a href="#">About</a>
+</nav>`},
+{t:"ปุ่มกดแรก",g:["HTML","JS"],use:"ทำให้หน้าเว็บตอบสนองเมื่อผู้ใช้กดปุ่ม",exp:"onclick เรียกฟังก์ชันตอนคลิก ส่วน document.getElementById หา element มาเปลี่ยนข้อความ",code:`<button onclick="hi()">Click me</button>
+<p id="msg"></p>
+<script>
+  function hi() {
+    document.getElementById("msg").innerText = "Hello!";
+  }
+<\/script>`},
+{t:"ตัวนับเลข",g:["HTML","JS"],use:"ทำตัวนับ เช่น ยอดไลก์ จำนวนสินค้าในตะกร้า",exp:"let ประกาศตัวแปรที่เปลี่ยนค่าได้ n++ คือเพิ่มทีละ 1",code:`<h2 id="n">0</h2>
+<button onclick="add()">+1</button>
+<script>
+  let n = 0;
+  function add() {
+    n++;
+    document.getElementById("n").innerText = n;
+  }
+<\/script>`},
+{t:"ตัวแปร + เงื่อนไข JS",g:["JS"],use:"เก็บข้อมูลและตัดสินใจ เช่น เช็คอายุ เช็คสิทธิ์",exp:"console.log แสดงผลในคอนโซล (ในกรอบ Preview ขึ้นเป็นข้อความ) if ใช้เช็คเงื่อนไข",code:`let name = "Good";
+let age = 20;
+console.log("Name: " + name);
+console.log("Age: " + age);
+if (age >= 18) {
+  console.log("Adult");
+}`},
+{t:"วนลูปอาร์เรย์",g:["JS"],use:"แสดงรายการข้อมูลทีละตัว เช่น รายชื่อนักเรียน",exp:"อาร์เรย์เก็บหลายค่า for วนซ้ำตามจำนวนรอบ .length คือจำนวนสมาชิก",code:`const fruits = ["apple", "banana", "mango"];
+for (let i = 0; i < fruits.length; i++) {
+  console.log(i + 1 + ". " + fruits[i]);
+}`},
+{t:"สลับ Dark Mode",g:["HTML","CSS","JS"],use:"ปุ่มสลับธีมมืด/สว่างที่เว็บทั่วไปมี",exp:"classList.toggle เปิด/ปิดคลาส dark แล้ว CSS เปลี่ยนสีตามคลาสนั้น",code:`<style>
+  body { background: white; color: black; }
+  body.dark { background: #111; color: #0f0; }
+</style>
+<h1>Dark Mode</h1>
+<button onclick="document.body.classList.toggle('dark')">Toggle</button>`},
+{t:"Python เริ่มต้น",g:["Python"],use:"ใช้เขียนสคริปต์อัตโนมัติ วิเคราะห์ข้อมูล และงานหลังบ้าน",exp:"print() แสดงผล ตัวแปรสร้างได้เลยโดยไม่ต้องประกาศชนิด",code:`name = "Good"
+age = 20
+print("Hello", name)
+print("Age:", age)`,out:"Hello Good\nAge: 20"},
+{t:"Python if / else",g:["Python"],use:"ตัดเกรด ตรวจเงื่อนไขหลายระดับ",exp:"Python ใช้การย่อหน้า (4 ช่อง) แทนปีกกา และต้องมี : ท้ายบรรทัด if/elif/else",code:`score = 75
+if score >= 80:
+    print("Grade A")
+elif score >= 70:
+    print("Grade B")
+else:
+    print("Try again")`,out:"Grade B"},
+{t:"Python for loop",g:["Python"],use:"ประมวลผลรายการข้อมูลหรือรวมค่าตัวเลข",exp:"for วนทีละสมาชิก range(1, 6) ให้เลข 1 ถึง 5 และ += คือบวกเพิ่ม",code:`fruits = ["apple", "banana", "mango"]
+for f in fruits:
+    print("I like", f)
+total = 0
+for n in range(1, 6):
+    total += n
+print("Sum =", total)`,out:"I like apple\nI like banana\nI like mango\nSum = 15"},
+{t:"Python ฟังก์ชัน",g:["Python"],use:"แยกโค้ดที่ใช้ซ้ำเป็นชุดคำสั่ง เช่น คำนวณพื้นที่",exp:"def สร้างฟังก์ชัน return ส่งค่ากลับ เรียกใช้ได้หลายครั้งด้วยค่าต่างกัน",code:`def area(w, h):
+    return w * h
+
+print(area(3, 4))
+print(area(5, 6))`,out:"12\n30"},
+{t:"JS ฟังก์ชัน + map",g:["JS"],use:"แปลงข้อมูลทั้งชุด เช่น คิดราคาหลังลด",exp:"map สร้างอาร์เรย์ใหม่จากเดิม n => n * 2 คือฟังก์ชันลูกศร",code:`const nums = [1, 2, 3, 4];
+const double = nums.map(n => n * 2);
+console.log(double);
+function greet(name) {
+  return "Hi " + name;
+}
+console.log(greet("Good"));`},
+{t:"ช่องกรอกชื่อ",g:["HTML","JS"],use:"รับข้อมูลจากผู้ใช้ เช่น แบบฟอร์ม ช่องค้นหา",exp:"อ่านค่าจาก <input> ด้วย .value แล้วนำไปแสดงในหน้าเว็บ (ลองพิมพ์ชื่อในพรีวิวได้)",code:`<input id="t" placeholder="Your name">
+<button onclick="go()">Say Hi</button>
+<h2 id="r"></h2>
+<script>
+  function go() {
+    const v = document.getElementById("t").value;
+    document.getElementById("r").innerText = "Hi " + v;
+  }
+<\/script>`},
+{t:"To-Do List",g:["HTML","CSS","JS"],use:"แอปจดงาน — พื้นฐานของแอปที่เพิ่มข้อมูลลงหน้าเว็บได้",exp:"createElement สร้างแท็กใหม่ appendChild เอาไปต่อท้ายรายการ",code:`<style>
+  li { color: green; margin: 4px; }
+</style>
+<input id="i">
+<button onclick="add()">Add</button>
+<ul id="l"></ul>
+<script>
+  function add() {
+    const li = document.createElement("li");
+    li.innerText = document.getElementById("i").value;
+    document.getElementById("l").appendChild(li);
+  }
+<\/script>`},
+{t:"Python Dictionary",g:["Python"],use:"เก็บข้อมูลเป็นคู่ คีย์:ค่า เช่น ข้อมูลนักเรียน คะแนนรายวิชา",exp:"dict ใช้ {} เรียกค่าด้วยคีย์ และ .items() ให้วนอ่านทั้งคีย์และค่า",code:`student = {"name": "Good", "score": 90}
+print(student["name"])
+scores = {"math": 80, "web": 95}
+for k, v in scores.items():
+    print(k, v)`,out:"Good\nmath 80\nweb 95"},
+{t:"เครื่องคิดเลขบวกเลข",g:["HTML","CSS","JS"],use:"ฟอร์มคำนวณ เช่น คิดราคา คิดคะแนนรวม",exp:"+ นำหน้าสตริงจะแปลงเป็นตัวเลข ไม่เช่นนั้น 2 + 3 จะกลายเป็น \"23\"",code:`<input id="a" type="number" value="2">
+<input id="b" type="number" value="3">
+<button onclick="calc()">Add</button>
+<p id="o"></p>
+<style>
+  input { width: 60px; }
+</style>
+<script>
+  function calc() {
+    const a = +document.getElementById("a").value;
+    const b = +document.getElementById("b").value;
+    document.getElementById("o").innerText = a + b;
+  }
+<\/script>`},
+{t:"👑 บอส: นาฬิกาดิจิทัล",g:["HTML","CSS","JS"],use:"รวมทุกอย่าง: โครงสร้าง ตกแต่ง และอัปเดตหน้าเว็บอัตโนมัติ",exp:"setInterval เรียกฟังก์ชันซ้ำทุก 1000 มิลลิวินาที เวลาจึงเดินเอง",code:`<style>
+  body { background: #0a0a1a; text-align: center; }
+  #c {
+    color: #0ff;
+    font: 48px monospace;
+    margin-top: 40px;
+  }
+</style>
+<div id="c"></div>
+<script>
+  function tick() {
+    const d = new Date();
+    document.getElementById("c").innerText = d.toLocaleTimeString();
+  }
+  tick();
+  setInterval(tick, 1000);
+<\/script>`}
+];
+const $=s=>document.querySelector(s),ta=$('#ta');
+let S;try{S=JSON.parse(localStorage.getItem('ctq1'))}catch(e){}
+S=S||{st:Array(20).fill(0),all:false};
+const save=()=>{try{localStorage.setItem('ctq1',JSON.stringify(S))}catch(e){}};
+let cur=0,target='',prev=0,total=0,err=0,t0=0,hints=0,mem=false,reveal=false,rt,pt,done=false;
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const unlocked=i=>S.all||i===0||S.st[i-1]>0;
+
+function nav(){
+  $('#nav').innerHTML=L.map((l,i)=>`<button class="${i===cur?'cur':''} ${unlocked(i)?'':'lock'}" data-i="${i}">${unlocked(i)?i+1:'🔒'}<br>${'⭐'.repeat(S.st[i])||'·'}</button>`).join('');
+  $('#tot').textContent='⭐ '+S.st.reduce((a,b)=>a+b,0)+'/60';
+}
+$('#nav').onclick=e=>{const b=e.target.closest('button');if(b&&unlocked(+b.dataset.i))load(+b.dataset.i)};
+
+function load(n){
+  cur=n;const l=L[n];target=l.code;ta.value='';prev=0;total=err=hints=0;t0=0;done=false;
+  $('#info').innerHTML=`<div>${l.g.map(g=>`<span class="tag ${g}">${g}</span>`).join('')}<small class="note">ด่าน ${n+1}/20</small></div>
+  <h2>${l.t}</h2><p><b>📍 ใช้เมื่อไหร่:</b> ${l.use}</p><p><b>📖 อธิบาย:</b> ${l.exp}</p>`;
+  $('#pv').style.display=l.out?'none':'block';$('#term').style.display=l.out?'block':'none';
+  $('#pvt').textContent=l.out?'🖥 Terminal — python main.py':'🌐 Live Preview — ผลลัพธ์แสดงสดตามที่พิมพ์';
+  nav();clearTimeout(rt);reveal=false;if(mem)show(10);
+  render();preview();stats();ta.focus();
+}
+function show(s){reveal=true;render();clearTimeout(rt);rt=setTimeout(()=>{reveal=false;render()},s*1000)}
+
+function render(){
+  const v=ta.value,hide=mem&&!reveal;let h='';
+  for(let i=0;i<target.length;i++){
+    const c=target[i];let cls,ch=c==='\n'?'↵\n':c;
+    if(i<v.length){
+      if(v[i]===c)cls='ok';else{cls='bad';ch=(v[i]===' '?'␣':v[i]==='\n'?'↵':v[i])+(c==='\n'?'\n':'')}
+    }else cls=(i===v.length?'cur ':'')+(hide?'hide':'pend');
+    h+=`<span class="${cls}">${esc(ch)}</span>`;
+  }
+  if(v.length>=target.length)h+='<span class="cur"> </span>';
+  $('#disp').innerHTML=h;
+}
+function stats(){
+  const v=ta.value.length,m=t0?(Date.now()-t0)/60000:0;
+  $('#wpm').textContent=m>0.02?Math.round(v/5/m):0;
+  $('#acc').textContent=total?Math.max(0,Math.round(100*(1-err/total))):100;
+  const p=Math.round(100*v/target.length);$('#pg').textContent=p;$('#bar i').style.width=p+'%';
+}
+function preview(final){
+  clearTimeout(pt);
+  pt=setTimeout(()=>{
+    const l=L[cur],v=final?target:ta.value;
+    if(l.out){$('#term').textContent='$ python main.py\n'+(v===target?l.out:'(พิมพ์โค้ดให้ครบและถูกต้อง เพื่อรันโปรแกรม)');return}
+    if(l.g.length===1&&l.g[0]==='JS'){
+      $('#pv').srcdoc='<body style="margin:12px;background:#0d1117;color:#7ee787;font:14px monospace"><pre id=o></pre><script>const __o=document.getElementById("o");console.log=(...a)=>{__o.textContent+=a.map(x=>typeof x==="object"?JSON.stringify(x):x).join(" ")+"\\n"};window.onerror=()=>true;try{'+v+'\n}catch(e){}<\/script>';
+    }else $('#pv').srcdoc=v;
+  },final?0:350);
+}
+function onChange(){
+  let v=ta.value.slice(0,target.length);if(v!==ta.value)ta.value=v;
+  if(!t0&&v.length)t0=Date.now();
+  for(let i=prev;i<v.length;i++){total++;if(v[i]!==target[i])err++}
+  prev=v.length;ta.setSelectionRange(v.length,v.length);
+  render();stats();preview();
+  if(!done&&v===target)finish();
+}
+ta.addEventListener('input',onChange);
+ta.addEventListener('paste',e=>e.preventDefault());
+ta.addEventListener('keydown',e=>{
+  if(e.key==='Enter'||e.key==='Tab'){
+    e.preventDefault();const p=ta.value.length;let s;
+    if(e.key==='Tab')s='  ';
+    else{s='\n';if(target[p]==='\n'){let j=p+1;while(target[j]===' '){s+=' ';j++}}}
+    ta.value+=s;onChange();
+  }
+});
+ta.addEventListener('click',()=>ta.setSelectionRange(ta.value.length,ta.value.length));
+
+function finish(){
+  done=true;const m=(Date.now()-t0)/60000,wpm=Math.round(target.length/5/m);
+  const acc=Math.max(0,Math.round(100*(1-err/total)));
+  let st=acc>=95?3:acc>=85?2:1;if(hints>0)st=Math.min(st,2);
+  S.st[cur]=Math.max(S.st[cur],st);save();nav();preview(true);
+  $('#ovs').textContent='⭐'.repeat(st)+'☆'.repeat(3-st);
+  $('#ovd').textContent=`ความเร็ว ${wpm} WPM • แม่นยำ ${acc}% • ใช้ตัวช่วย ${hints} ครั้ง`;
+  $('#ovt').textContent=cur===19?'🎉 จบเกม! คุณเก่งมาก':'ผ่านด่าน!';
+  $('#ovn').style.display=cur===19?'none':'inline-block';
+  setTimeout(()=>$('#ov').style.display='flex',700);
+}
+$('#ovn').onclick=()=>{$('#ov').style.display='none';load(cur+1)};
+$('#ovr').onclick=()=>{$('#ov').style.display='none';load(cur)};
+$('#retry').onclick=()=>load(cur);
+$('#hint').onclick=()=>{hints++;show(3);ta.focus()};
+$('#mem').onclick=()=>{mem=!mem;$('#mem').classList.toggle('on',mem);$('#mem').textContent='🧠 โหมดฝึกจำ: '+(mem?'เปิด':'ปิด');
+  if(mem)show(10);else{clearTimeout(rt);reveal=false;render()}ta.focus()};
+$('#unl').onclick=()=>{S.all=true;save();nav()};
+$('#rst').onclick=()=>{if(confirm('ลบความคืบหน้าทั้งหมด?')){S={st:Array(20).fill(0),all:false};save();load(0)}};
+$('#ed').addEventListener('click',()=>ta.focus());
+setInterval(()=>{if(t0&&!done)stats()},1000);
+let first=S.st.findIndex(x=>!x);load(first<0?0:first);
+</script>
+</body>
+</html>
