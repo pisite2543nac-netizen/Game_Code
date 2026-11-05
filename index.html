@@ -45,22 +45,21 @@ h2{margin:6px 0;font-size:1.1rem}.info p{margin:4px 0;color:var(--m);font-size:.
 <body>
 <header>
   <h1>⌨️ Code <span>Typing</span> Quest <small style="color:var(--m);font-weight:400">ฝึกพิมพ์ + จำโค้ด 20 ด่าน</small></h1>
-  <div><span id="tot">⭐ 0/60</span> <button id="unl">🔓 ปลดล็อกทุกด่าน</button> <button id="rst">รีเซ็ต</button></div>
+  <div><span id="tot">⭐ 0/60</span> <button id="fs">⛶ เต็มจอ</button> <button id="rst">รีเซ็ต</button></div>
 </header>
 <div id="nav"></div>
 <main>
   <section>
     <div class="box info" id="info"></div>
     <div class="box" style="margin-top:14px">
-      <div id="stats"><span>WPM: <b id="wpm">0</b></span><span>แม่นยำ: <b id="acc">100</b>%</span><span>ความคืบหน้า: <b id="pg">0</b>%</span></div>
+      <div id="stats"><span id="ph" style="color:var(--c);font-weight:700"></span><span>WPM: <b id="wpm">0</b></span><span>แม่นยำ: <b id="acc">100</b>%</span><span>ความคืบหน้า: <b id="pg">0</b>%</span></div>
       <div id="bar"><i></i></div>
       <div id="ed"><pre id="disp"></pre>
         <textarea id="ta" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea></div>
       <div class="row">
-        <button id="mem">🧠 โหมดฝึกจำ: ปิด</button>
-        <button id="hint">👁 ดูโค้ดช่วย (3 วิ)</button>
+                <button id="hint">👁 ดูโค้ดช่วย 3 วิ (ลดดาว)</button>
         <button id="retry">↺ เริ่มใหม่</button>
-        <span class="note">คลิกกล่องแล้วพิมพ์ได้เลย • กด Enter ระบบเว้นย่อหน้าให้อัตโนมัติ</span>
+        <span class="note">ขั้น 1 พิมพ์ตามโค้ด → ขั้น 2 โค้ดถูกซ่อน พิมพ์จากความจำให้ถูกทั้งหมดจึงผ่านด่าน • Enter เว้นย่อหน้าให้อัตโนมัติ</span>
       </div>
     </div>
   </section>
@@ -71,6 +70,10 @@ h2{margin:6px 0;font-size:1.1rem}.info p{margin:4px 0;color:var(--m);font-size:.
     <div id="term"></div>
   </section>
 </main>
+<div id="start" style="position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;align-items:center;justify-content:center;text-align:center;padding:20px">
+  <div><div style="font-size:3rem">⌨️</div><h1 style="font-size:1.8rem;margin:8px 0">Code <span>Typing</span> Quest</h1>
+  <p class="note" style="max-width:420px;margin:0 auto 18px">20 ด่าน HTML • CSS • JS • Python<br>แต่ละด่าน: ขั้น 1 พิมพ์ตามโค้ด → ขั้น 2 ปิดโค้ดแล้วพิมพ์จากความจำ<br>ต้องพยายามจนผ่านจึงปลดล็อกด่านถัดไป</p>
+  <button id="go" class="on" style="font-size:1.1rem;padding:12px 30px">▶ เริ่มเกม (เต็มหน้าจอ)</button></div></div>
 <div id="ov"><div><div class="s" id="ovs"></div><h2 id="ovt">ผ่านด่าน!</h2><p id="ovd" class="note"></p>
   <button id="ovn" class="on">ด่านถัดไป ▶</button> <button id="ovr">เล่นซ้ำ</button></div></div>
 
@@ -237,11 +240,12 @@ for k, v in scores.items():
 ];
 const $=s=>document.querySelector(s),ta=$('#ta');
 let S;try{S=JSON.parse(localStorage.getItem('ctq1'))}catch(e){}
-S=S||{st:Array(20).fill(0),all:false};
+S=S||{st:Array(20).fill(0)};S.all=false;
 const save=()=>{try{localStorage.setItem('ctq1',JSON.stringify(S))}catch(e){}};
-let cur=0,target='',prev=0,total=0,err=0,t0=0,hints=0,mem=false,reveal=false,rt,pt,done=false;
+let phase=1,ovMode='next',cur=0,target='',prev=0,total=0,err=0,t0=0,hints=0,mem=false,reveal=false,rt,pt,done=false;
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const unlocked=i=>S.all||i===0||S.st[i-1]>0;
+function setPhase(){$('#ph').textContent=phase===1?'ขั้น 1/2 · ฝึกพิมพ์ตามโค้ด':'ขั้น 2/2 · 🧠 ทดสอบความจำ (โค้ดถูกซ่อน)';$('#hint').style.display=phase===2?'':'none'}
+const unlocked=i=>i===0||S.st[i-1]>0;
 
 function nav(){
   $('#nav').innerHTML=L.map((l,i)=>`<button class="${i===cur?'cur':''} ${unlocked(i)?'':'lock'}" data-i="${i}">${unlocked(i)?i+1:'🔒'}<br>${'⭐'.repeat(S.st[i])||'·'}</button>`).join('');
@@ -255,13 +259,13 @@ function load(n){
   <h2>${l.t}</h2><p><b>📍 ใช้เมื่อไหร่:</b> ${l.use}</p><p><b>📖 อธิบาย:</b> ${l.exp}</p>`;
   $('#pv').style.display=l.out?'none':'block';$('#term').style.display=l.out?'block':'none';
   $('#pvt').textContent=l.out?'🖥 Terminal — python main.py':'🌐 Live Preview — ผลลัพธ์แสดงสดตามที่พิมพ์';
-  nav();clearTimeout(rt);reveal=false;if(mem)show(10);
+  nav();clearTimeout(rt);reveal=false;phase=1;setPhase();
   render();preview();stats();ta.focus();
 }
 function show(s){reveal=true;render();clearTimeout(rt);rt=setTimeout(()=>{reveal=false;render()},s*1000)}
 
 function render(){
-  const v=ta.value,hide=mem&&!reveal;let h='';
+  const v=ta.value,hide=phase===2&&!reveal;let h='';
   for(let i=0;i<target.length;i++){
     const c=target[i];let cls,ch=c==='\n'?'↵\n':c;
     if(i<v.length){
@@ -308,8 +312,16 @@ ta.addEventListener('keydown',e=>{
 });
 ta.addEventListener('click',()=>ta.setSelectionRange(ta.value.length,ta.value.length));
 
+function startMem(){phase=2;ta.value='';prev=0;total=err=hints=0;t0=0;done=false;clearTimeout(rt);reveal=false;setPhase();render();preview();stats();ta.focus()}
 function finish(){
-  done=true;const m=(Date.now()-t0)/60000,wpm=Math.round(target.length/5/m);
+  done=true;
+  if(phase===1){preview(true);ovMode='mem';
+    $('#ovs').textContent='👀 ➜ 🧠';$('#ovt').textContent='ขั้นที่ 1 ผ่านแล้ว!';
+    $('#ovd').textContent='ต่อไปโค้ดจะถูกซ่อน ให้พิมพ์ซ้ำจากความจำ ต้องพิมพ์ถูกทั้งหมดจึงจะผ่านด่าน';
+    $('#ovn').textContent='🧠 เริ่มทดสอบความจำ';$('#ovn').style.display='inline-block';$('#ovr').style.display='none';
+    setTimeout(()=>$('#ov').style.display='flex',700);return}
+  ovMode='next';$('#ovn').textContent='ด่านถัดไป ▶';$('#ovr').style.display='inline-block';
+const m=(Date.now()-t0)/60000,wpm=Math.round(target.length/5/m);
   const acc=Math.max(0,Math.round(100*(1-err/total)));
   let st=acc>=95?3:acc>=85?2:1;if(hints>0)st=Math.min(st,2);
   S.st[cur]=Math.max(S.st[cur],st);save();nav();preview(true);
@@ -319,14 +331,14 @@ function finish(){
   $('#ovn').style.display=cur===19?'none':'inline-block';
   setTimeout(()=>$('#ov').style.display='flex',700);
 }
-$('#ovn').onclick=()=>{$('#ov').style.display='none';load(cur+1)};
+$('#ovn').onclick=()=>{$('#ov').style.display='none';if(ovMode==='mem')startMem();else load(cur+1)};
 $('#ovr').onclick=()=>{$('#ov').style.display='none';load(cur)};
 $('#retry').onclick=()=>load(cur);
 $('#hint').onclick=()=>{hints++;show(3);ta.focus()};
-$('#mem').onclick=()=>{mem=!mem;$('#mem').classList.toggle('on',mem);$('#mem').textContent='🧠 โหมดฝึกจำ: '+(mem?'เปิด':'ปิด');
-  if(mem)show(10);else{clearTimeout(rt);reveal=false;render()}ta.focus()};
-$('#unl').onclick=()=>{S.all=true;save();nav()};
-$('#rst').onclick=()=>{if(confirm('ลบความคืบหน้าทั้งหมด?')){S={st:Array(20).fill(0),all:false};save();load(0)}};
+function fs(){const d=document.documentElement;try{let r;if(!document.fullscreenElement&&!document.webkitFullscreenElement)r=(d.requestFullscreen||d.webkitRequestFullscreen||(()=>{})).call(d);else r=(document.exitFullscreen||document.webkitExitFullscreen).call(document);if(r&&r.catch)r.catch(()=>{})}catch(e){}}
+$('#fs').onclick=fs;
+$('#go').onclick=()=>{fs();$('#start').style.display='none';ta.focus()};
+$('#rst').onclick=()=>{if(confirm('ลบความคืบหน้าทั้งหมด?')){S={st:Array(20).fill(0)};save();load(0)}};
 $('#ed').addEventListener('click',()=>ta.focus());
 setInterval(()=>{if(t0&&!done)stats()},1000);
 let first=S.st.findIndex(x=>!x);load(first<0?0:first);
